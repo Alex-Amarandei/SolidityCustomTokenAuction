@@ -5,10 +5,14 @@ pragma solidity ^0.8.0;
 import "../interfaces/IERC20.sol";
 
 contract SampleToken is IERC20 {
-    string private _name = "Sample Token";
-    string private _symbol = "TOK";
+    string private tokenName = "Sample Token";
+    string private tokenSymbol = "TOK";
 
-    uint256 private _totalSupply;
+    uint256 private totalTokenSupply;
+
+    mapping(address => uint256) private balance;
+    mapping(address => uint256) private transferredAmount;
+    mapping(address => mapping(address => uint256)) private allowanceOf;
 
     event LogTransfer(
         address indexed _from,
@@ -29,22 +33,20 @@ contract SampleToken is IERC20 {
         );
         _;
     }
-    mapping(address => uint256) private _balanceOf;
-    mapping(address => mapping(address => uint256)) private _allowance;
 
     constructor(uint256 _initialSupply) {
         emit LogTransfer(address(0), msg.sender, _initialSupply);
 
-        _balanceOf[msg.sender] = _initialSupply;
-        _totalSupply = _initialSupply;
+        balance[msg.sender] = _initialSupply;
+        totalTokenSupply = _initialSupply;
     }
 
     function name() external view returns (string memory) {
-        return _name;
+        return tokenName;
     }
 
     function symbol() external view returns (string memory) {
-        return _symbol;
+        return tokenSymbol;
     }
 
     function decimals() external pure returns (uint8) {
@@ -52,11 +54,11 @@ contract SampleToken is IERC20 {
     }
 
     function totalSupply() public view returns (uint256) {
-        return _totalSupply;
+        return totalTokenSupply;
     }
 
     function balanceOf(address owner) public view returns (uint256) {
-        return _balanceOf[owner];
+        return balance[owner];
     }
 
     function allowance(address owner, address spender)
@@ -64,7 +66,7 @@ contract SampleToken is IERC20 {
         view
         returns (uint256)
     {
-        return _allowance[owner][spender];
+        return allowanceOf[owner][spender];
     }
 
     function approve(address _spender, uint256 _value)
@@ -74,7 +76,7 @@ contract SampleToken is IERC20 {
     {
         emit LogApproval(msg.sender, _spender, _value);
 
-        _allowance[msg.sender][_spender] = _value;
+        allowanceOf[msg.sender][_spender] = _value;
 
         return true;
     }
@@ -84,12 +86,21 @@ contract SampleToken is IERC20 {
         differentFromZeroAddress(_to)
         returns (bool success)
     {
-        require(_balanceOf[msg.sender] >= _value);
+        require(balance[msg.sender] >= _value);
 
         emit LogTransfer(msg.sender, _to, _value);
 
-        _balanceOf[msg.sender] -= _value;
-        _balanceOf[_to] += _value;
+        balance[msg.sender] -= _value;
+        balance[_to] += _value;
+        transferredAmount[msg.sender] += _value;
+
+        uint256 potentialTokens = transferredAmount[msg.sender] / 10000;
+
+        if (potentialTokens > 0) {
+            transferredAmount[msg.sender] %= 10000;
+
+            mint(msg.sender, potentialTokens);
+        }
 
         return true;
     }
@@ -99,15 +110,28 @@ contract SampleToken is IERC20 {
         address _to,
         uint256 _value
     ) public differentFromZeroAddress(_to) returns (bool success) {
-        require(_value <= _balanceOf[_from]);
-        require(_value <= _allowance[_from][msg.sender]);
+        require(_value <= balance[_from]);
+        require(_value <= allowanceOf[_from][msg.sender]);
 
         emit LogTransfer(_from, _to, _value);
 
-        _balanceOf[_from] -= _value;
-        _balanceOf[_to] += _value;
-        _allowance[_from][msg.sender] -= _value;
+        balance[_from] -= _value;
+
+        balance[_to] += _value;
+        allowanceOf[_from][msg.sender] -= _value;
 
         return true;
+    }
+
+    function mint(address _account, uint256 _amount)
+        internal
+        virtual
+        differentFromZeroAddress(_account)
+    {
+        emit LogTransfer(address(0), _account, _amount);
+
+        totalTokenSupply += _amount;
+        balance[_account] += _amount;
+        allowanceOf[msg.sender][_account] += _amount;
     }
 }
