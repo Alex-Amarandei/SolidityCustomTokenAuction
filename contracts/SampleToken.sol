@@ -2,11 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-contract SampleToken {
-    string public name = "Sample Token";
-    string public symbol = "TOK";
+import "../interfaces/IERC20.sol";
 
-    uint256 public totalSupply;
+contract SampleToken is IERC20 {
+    string private _name = "Sample Token";
+    string private _symbol = "TOK";
+
+    uint256 private _totalSupply;
 
     event LogTransfer(
         address indexed _from,
@@ -20,37 +22,68 @@ contract SampleToken {
         uint256 _value
     );
 
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
+    mapping(address => uint256) private _balanceOf;
+    mapping(address => mapping(address => uint256)) private _allowance;
 
     constructor(uint256 _initialSupply) {
         emit LogTransfer(address(0), msg.sender, _initialSupply);
 
-        balanceOf[msg.sender] = _initialSupply;
-        totalSupply = _initialSupply;
+        _balanceOf[msg.sender] = _initialSupply;
+        _totalSupply = _initialSupply;
     }
 
-    function transfer(address _to, uint256 _value)
+    function name() external view returns (string memory) {
+        return _name;
+    }
+
+    function symbol() external view returns (string memory) {
+        return _symbol;
+    }
+
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address owner) public view returns (uint256) {
+        return _balanceOf[owner];
+    }
+
+    function allowance(address owner, address spender)
         public
-        returns (bool success)
+        view
+        returns (uint256)
     {
-        require(balanceOf[msg.sender] >= _value);
-
-        emit LogTransfer(msg.sender, _to, _value);
-
-        balanceOf[msg.sender] -= _value;
-        balanceOf[_to] += _value;
-
-        return true;
+        return _allowance[owner][spender];
     }
 
     function approve(address _spender, uint256 _value)
         public
         returns (bool success)
     {
+        require(_spender != address(0));
+
         emit LogApproval(msg.sender, _spender, _value);
 
-        allowance[msg.sender][_spender] = _value;
+        _allowance[msg.sender][_spender] = _value;
+
+        return true;
+    }
+
+    function transfer(address _to, uint256 _value)
+        public
+        returns (bool success)
+    {
+        require(_balanceOf[msg.sender] >= _value);
+        require(_to != address(0));
+
+        emit LogTransfer(msg.sender, _to, _value);
+
+        _balanceOf[msg.sender] -= _value;
+        _balanceOf[_to] += _value;
 
         return true;
     }
@@ -60,61 +93,16 @@ contract SampleToken {
         address _to,
         uint256 _value
     ) public returns (bool success) {
-        require(_value <= balanceOf[_from]);
-        require(_value <= allowance[_from][msg.sender]);
+        require(_value <= _balanceOf[_from]);
+        require(_value <= _allowance[_from][msg.sender]);
+        require(_to != address(0));
 
         emit LogTransfer(_from, _to, _value);
 
-        balanceOf[_from] -= _value;
-        balanceOf[_to] += _value;
-        allowance[_from][msg.sender] -= _value;
+        _balanceOf[_from] -= _value;
+        _balanceOf[_to] += _value;
+        _allowance[_from][msg.sender] -= _value;
 
         return true;
-    }
-}
-
-contract SampleTokenSale {
-    SampleToken public tokenContract;
-    uint256 public tokenPrice;
-    address owner;
-    uint256 public tokensSold;
-
-    event LogCreateContract(
-        address _owner,
-        SampleToken _tokenContract,
-        uint256 _initialTokenPrice
-    );
-    event LogSell(address indexed _buyer, uint256 indexed _amount);
-
-    constructor(SampleToken _tokenContract, uint256 _tokenPrice) {
-        emit LogCreateContract(msg.sender, _tokenContract, _tokenPrice);
-
-        owner = msg.sender;
-        tokenContract = _tokenContract;
-        tokenPrice = _tokenPrice;
-    }
-
-    function buyTokens(uint256 _numberOfTokens) public payable {
-        require(msg.value == _numberOfTokens * tokenPrice);
-        require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
-
-        emit LogSell(msg.sender, _numberOfTokens);
-
-        tokensSold += _numberOfTokens;
-
-        require(tokenContract.transfer(msg.sender, _numberOfTokens));
-    }
-
-    function endSale() public {
-        require(msg.sender == owner);
-
-        require(
-            tokenContract.transfer(
-                owner,
-                tokenContract.balanceOf(address(this))
-            )
-        );
-
-        payable(msg.sender).transfer(address(this).balance);
     }
 }
