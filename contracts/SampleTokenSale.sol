@@ -33,7 +33,14 @@ contract SampleTokenSale {
 
         tokensSold += _numberOfTokens;
 
-        require(tokenContract.transfer(msg.sender, _numberOfTokens));
+        require(tokenContract.approve(msg.sender, _numberOfTokens));
+        require(
+            tokenContract.transferFrom(
+                address(this),
+                msg.sender,
+                _numberOfTokens
+            )
+        );
     }
 
     function endSale() public {
