@@ -6,9 +6,9 @@ import "./SampleToken.sol";
 
 contract SampleTokenSale {
     SampleToken public tokenContract;
-    uint256 public tokenPrice;
-    address owner;
-    uint256 public tokensSold;
+    uint256 private tokenPrice;
+    address private owner;
+    uint256 private tokensSold;
 
     event LogCreateContract(
         address _owner,
@@ -23,6 +23,30 @@ contract SampleTokenSale {
         owner = msg.sender;
         tokenContract = _tokenContract;
         tokenPrice = _tokenPrice;
+    }
+
+    function getTokenPrice() public view returns (uint256) {
+        return tokenPrice;
+    }
+
+    function getTokensSold() public view returns (uint256) {
+        return tokensSold;
+    }
+
+    function getOwner() public view returns (address) {
+        return owner;
+    }
+
+    function setTokenPrice(uint256 _tokenPrice)
+        external
+        returns (bool success)
+    {
+        require(msg.sender == owner);
+        require(_tokenPrice != 0);
+
+        tokenPrice = _tokenPrice;
+
+        return true;
     }
 
     function buyTokens(uint256 _numberOfTokens) public payable {
