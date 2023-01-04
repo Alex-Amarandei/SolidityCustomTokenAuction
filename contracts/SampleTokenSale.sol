@@ -17,6 +17,14 @@ contract SampleTokenSale {
     );
     event LogSell(address indexed _buyer, uint256 indexed _amount);
 
+    modifier ownerOnly() {
+        require(
+            msg.sender == owner,
+            "Only the contract owner is allowed to call this function"
+        );
+        _;
+    }
+
     constructor(SampleToken _tokenContract, uint256 _tokenPrice) {
         emit LogCreateContract(msg.sender, _tokenContract, _tokenPrice);
 
@@ -39,9 +47,9 @@ contract SampleTokenSale {
 
     function setTokenPrice(uint256 _tokenPrice)
         external
+        ownerOnly
         returns (bool success)
     {
-        require(msg.sender == owner);
         require(_tokenPrice != 0);
 
         tokenPrice = _tokenPrice;
@@ -50,7 +58,8 @@ contract SampleTokenSale {
     }
 
     function buyTokens(uint256 _numberOfTokens) public payable {
-        require(msg.value == _numberOfTokens * tokenPrice);
+        uint256 totalValue = _numberOfTokens * tokenPrice;
+        require(msg.value >= totalValue);
         require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
 
         emit LogSell(msg.sender, _numberOfTokens);
@@ -65,11 +74,13 @@ contract SampleTokenSale {
                 _numberOfTokens
             )
         );
+
+        if (msg.value > totalValue) {
+            payable(msg.sender).transfer(msg.value - totalValue);
+        }
     }
 
-    function endSale() public {
-        require(msg.sender == owner);
-
+    function endSale() public ownerOnly {
         require(
             tokenContract.transfer(
                 owner,
