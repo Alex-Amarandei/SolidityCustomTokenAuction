@@ -58,27 +58,10 @@ contract SampleTokenSale {
         return true;
     }
 
-    function approvePartialContractSpend(uint256 _amountToApprove)
-        external
-        ownerOnly
-    {
-        emit LogApprove(_amountToApprove);
-
-        tokenContract.approve(address(this), _amountToApprove);
-    }
-
-    function approveTotalContractSpend() external ownerOnly {
-        uint256 totalSupply = tokenContract.totalSupply();
-
-        emit LogApprove(totalSupply);
-
-        tokenContract.approve(address(this), totalSupply);
-    }
-
     function buyTokens(uint256 _numberOfTokens) public payable {
         uint256 totalValue = _numberOfTokens * tokenPrice;
         require(msg.value >= totalValue);
-        require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
+        require(tokenContract.balanceOf(owner) >= _numberOfTokens);
 
         emit LogSell(msg.sender, _numberOfTokens);
 

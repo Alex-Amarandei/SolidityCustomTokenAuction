@@ -41,28 +41,29 @@ contract SampleToken is IERC20 {
         totalTokenSupply = _initialSupply;
     }
 
-    function name() external view returns (string memory) {
+    function name() external override view returns (string memory) {
         return tokenName;
     }
 
-    function symbol() external view returns (string memory) {
+    function symbol() external override view returns (string memory) {
         return tokenSymbol;
     }
 
-    function decimals() external pure returns (uint8) {
+    function decimals() external override pure returns (uint8) {
         return 18;
     }
 
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public override view returns (uint256) {
         return totalTokenSupply;
     }
 
-    function balanceOf(address owner) public view returns (uint256) {
+    function balanceOf(address owner) public override view returns (uint256) {
         return balance[owner];
     }
 
     function allowance(address owner, address spender)
         public
+        override
         view
         returns (uint256)
     {
@@ -71,6 +72,7 @@ contract SampleToken is IERC20 {
 
     function approve(address _spender, uint256 _value)
         public
+        override
         differentFromZeroAddress(_spender)
         returns (bool success)
     {
@@ -83,6 +85,7 @@ contract SampleToken is IERC20 {
 
     function transfer(address _to, uint256 _value)
         public
+        override
         differentFromZeroAddress(_to)
         returns (bool success)
     {
@@ -109,7 +112,9 @@ contract SampleToken is IERC20 {
         address _from,
         address _to,
         uint256 _value
-    ) public differentFromZeroAddress(_to) returns (bool success) {
+    ) public 
+    override
+    differentFromZeroAddress(_to) returns (bool success) {
         require(_value <= balance[_from]);
         require(_value <= allowanceOf[_from][msg.sender]);
 

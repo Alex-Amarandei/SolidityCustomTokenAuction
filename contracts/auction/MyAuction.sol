@@ -67,11 +67,7 @@ contract MyAuction is Auction {
         return true;
     }
 
-    function withdraw() public override returns (bool) {
-        require(
-            block.timestamp > auctionEnd || STATE == auctionState.CANCELLED,
-            "You can't withdraw, the auction is still open"
-        );
+    function withdraw() public override auctionEnded returns (bool) {
         uint256 amount = bidOf[msg.sender];
 
         bidOf[msg.sender] = 0;
