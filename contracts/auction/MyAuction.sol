@@ -101,8 +101,7 @@ contract MyAuction is Auction {
     {
         for (uint256 i = 0; i < bidders.length; i++) {
             if (bidOf[bidders[i]] != 0) {
-                tokenContract.transferFrom(
-                    address(this),
+                tokenContract.transfer(
                     bidders[i],
                     bidOf[bidders[i]]
                 );

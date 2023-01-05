@@ -21,22 +21,6 @@ contract SampleToken is IERC20 {
         _;
     }
 
-    modifier greaterEqual(
-        uint256 _greater,
-        string memory _greaterName,
-        uint256 _smaller,
-        string memory _smallerName
-    ) {
-        require(
-            _greater >= _smaller,
-            string.concat(
-                _greaterName,
-                string.concat(" must be greater than ", _smallerName)
-            )
-        );
-        _;
-    }
-
     constructor(uint256 initialSupply) {
         emit LogTransfer(address(0), msg.sender, initialSupply);
 
@@ -90,14 +74,13 @@ contract SampleToken is IERC20 {
         external
         override
         differentFromZeroAddress(to)
-        greaterEqual(
-            balance[msg.sender],
-            "Balance of sender",
-            value,
-            "transfer value"
-        )
         returns (bool success)
     {
+        require(
+            balance[msg.sender] >= value,
+            "Balance of sender must be greater than transfer value"
+        );
+
         emit LogTransfer(msg.sender, to, value);
 
         balance[msg.sender] -= value;
@@ -119,19 +102,15 @@ contract SampleToken is IERC20 {
         address from,
         address to,
         uint256 value
-    )
-        external
-        override
-        differentFromZeroAddress(to)
-        greaterEqual(balance[from], "Balance of from", value, "transfer value")
-        greaterEqual(
-            allowanceOf[from][msg.sender],
-            "Approved funds for sender",
-            value,
-            "transfer value"
-        )
-        returns (bool success)
-    {
+    ) external override differentFromZeroAddress(to) returns (bool success) {
+        require(
+            balance[from] >= value,
+            "Balance of sender must be greater than transfer value"
+        );
+        require(
+            allowanceOf[from][msg.sender] >= value,
+            "Balance of sender must be greater than transfer value"
+        );
         emit LogTransfer(from, to, value);
 
         balance[from] -= value;
