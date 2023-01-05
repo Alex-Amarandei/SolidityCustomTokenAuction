@@ -16,6 +16,7 @@ contract SampleTokenSale {
         uint256 _initialTokenPrice
     );
     event LogSell(address indexed _buyer, uint256 indexed _amount);
+    event LogApprove(uint256 _amountToApprove);
 
     modifier ownerOnly() {
         require(
@@ -57,6 +58,23 @@ contract SampleTokenSale {
         return true;
     }
 
+    function approvePartialContractSpend(uint256 _amountToApprove)
+        external
+        ownerOnly
+    {
+        emit LogApprove(_amountToApprove);
+
+        tokenContract.approve(address(this), _amountToApprove);
+    }
+
+    function approveTotalContractSpend() external ownerOnly {
+        uint256 totalSupply = tokenContract.totalSupply();
+
+        emit LogApprove(totalSupply);
+
+        tokenContract.approve(address(this), totalSupply);
+    }
+
     function buyTokens(uint256 _numberOfTokens) public payable {
         uint256 totalValue = _numberOfTokens * tokenPrice;
         require(msg.value >= totalValue);
@@ -66,14 +84,7 @@ contract SampleTokenSale {
 
         tokensSold += _numberOfTokens;
 
-        require(tokenContract.approve(msg.sender, _numberOfTokens));
-        require(
-            tokenContract.transferFrom(
-                address(this),
-                msg.sender,
-                _numberOfTokens
-            )
-        );
+        require(tokenContract.transferFrom(owner, msg.sender, _numberOfTokens));
 
         if (msg.value > totalValue) {
             payable(msg.sender).transfer(msg.value - totalValue);

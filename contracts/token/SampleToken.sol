@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../interfaces/IERC20.sol";
+import "../../interfaces/token/IERC20.sol";
 
 contract SampleToken is IERC20 {
     string private tokenName = "Sample Token";
@@ -116,7 +116,6 @@ contract SampleToken is IERC20 {
         emit LogTransfer(_from, _to, _value);
 
         balance[_from] -= _value;
-
         balance[_to] += _value;
         allowanceOf[_from][msg.sender] -= _value;
 
