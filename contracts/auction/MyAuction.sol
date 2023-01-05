@@ -49,9 +49,7 @@ contract MyAuction is Auction {
         highestBidder = msg.sender;
         bidders.push(msg.sender);
         bidOf[msg.sender] = highestBid;
-
         tokenContract.transferFrom(msg.sender, address(this), _amount);
-
         return true;
     }
 
@@ -71,16 +69,16 @@ contract MyAuction is Auction {
         uint256 amount = bidOf[msg.sender];
 
         bidOf[msg.sender] = 0;
-        tokenContract.transferFrom(address(this), msg.sender, amount);
 
         emit WithdrawalEvent(msg.sender, amount);
+
+        tokenContract.transfer(msg.sender, amount);
 
         return true;
     }
 
     function retrieveFunds() external ownerOnly auctionEnded returns (bool) {
-        tokenContract.transferFrom(
-            address(this),
+        tokenContract.transfer(
             msg.sender,
             tokenContract.balanceOf(address(this))
         );
