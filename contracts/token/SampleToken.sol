@@ -5,26 +5,13 @@ pragma solidity ^0.8.0;
 import "../../interfaces/token/IERC20.sol";
 
 contract SampleToken is IERC20 {
-    string private tokenName = "Sample Token";
-    string private tokenSymbol = "TOK";
-
+    string private tokenName = "ZAO Token";
+    string private tokenSymbol = "ZAO";
     uint256 private totalTokenSupply;
 
     mapping(address => uint256) private balance;
     mapping(address => uint256) private transferredAmount;
     mapping(address => mapping(address => uint256)) private allowanceOf;
-
-    event LogTransfer(
-        address indexed _from,
-        address indexed _to,
-        uint256 _value
-    );
-
-    event LogApproval(
-        address indexed _owner,
-        address indexed _spender,
-        uint256 _value
-    );
 
     modifier differentFromZeroAddress(address _address) {
         require(
@@ -34,68 +21,88 @@ contract SampleToken is IERC20 {
         _;
     }
 
-    constructor(uint256 _initialSupply) {
-        emit LogTransfer(address(0), msg.sender, _initialSupply);
-
-        balance[msg.sender] = _initialSupply;
-        totalTokenSupply = _initialSupply;
+    modifier greaterEqual(
+        uint256 _greater,
+        string memory _greaterName,
+        uint256 _smaller,
+        string memory _smallerName
+    ) {
+        require(
+            _greater >= _smaller,
+            string.concat(
+                _greaterName,
+                string.concat(" must be greater than ", _smallerName)
+            )
+        );
+        _;
     }
 
-    function name() external override view returns (string memory) {
+    constructor(uint256 initialSupply) {
+        emit LogTransfer(address(0), msg.sender, initialSupply);
+
+        balance[msg.sender] = initialSupply;
+        totalTokenSupply = initialSupply;
+    }
+
+    function name() external view override returns (string memory) {
         return tokenName;
     }
 
-    function symbol() external override view returns (string memory) {
+    function symbol() external view override returns (string memory) {
         return tokenSymbol;
     }
 
-    function decimals() external override pure returns (uint8) {
+    function decimals() external pure override returns (uint8) {
         return 18;
     }
 
-    function totalSupply() public override view returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return totalTokenSupply;
     }
 
-    function balanceOf(address owner) public override view returns (uint256) {
+    function balanceOf(address owner) external view override returns (uint256) {
         return balance[owner];
     }
 
     function allowance(address owner, address spender)
-        public
-        override
+        external
         view
+        override
         returns (uint256)
     {
         return allowanceOf[owner][spender];
     }
 
-    function approve(address _spender, uint256 _value)
-        public
+    function approve(address spender, uint256 value)
+        external
         override
-        differentFromZeroAddress(_spender)
+        differentFromZeroAddress(spender)
         returns (bool success)
     {
-        emit LogApproval(msg.sender, _spender, _value);
+        emit LogApproval(msg.sender, spender, value);
 
-        allowanceOf[msg.sender][_spender] = _value;
+        allowanceOf[msg.sender][spender] = value;
 
         return true;
     }
 
-    function transfer(address _to, uint256 _value)
-        public
+    function transfer(address to, uint256 value)
+        external
         override
-        differentFromZeroAddress(_to)
+        differentFromZeroAddress(to)
+        greaterEqual(
+            balance[msg.sender],
+            "Balance of sender",
+            value,
+            "transfer value"
+        )
         returns (bool success)
     {
-        require(balance[msg.sender] >= _value);
+        emit LogTransfer(msg.sender, to, value);
 
-        emit LogTransfer(msg.sender, _to, _value);
-
-        balance[msg.sender] -= _value;
-        balance[_to] += _value;
-        transferredAmount[msg.sender] += _value;
+        balance[msg.sender] -= value;
+        balance[to] += value;
+        transferredAmount[msg.sender] += value;
 
         uint256 potentialTokens = transferredAmount[msg.sender] / 10000;
 
@@ -109,33 +116,40 @@ contract SampleToken is IERC20 {
     }
 
     function transferFrom(
-        address _from,
-        address _to,
-        uint256 _value
-    ) public 
-    override
-    differentFromZeroAddress(_to) returns (bool success) {
-        require(_value <= balance[_from]);
-        require(_value <= allowanceOf[_from][msg.sender]);
+        address from,
+        address to,
+        uint256 value
+    )
+        external
+        override
+        differentFromZeroAddress(to)
+        greaterEqual(balance[from], "Balance of from", value, "transfer value")
+        greaterEqual(
+            allowanceOf[from][msg.sender],
+            "Approved funds for sender",
+            value,
+            "transfer value"
+        )
+        returns (bool success)
+    {
+        emit LogTransfer(from, to, value);
 
-        emit LogTransfer(_from, _to, _value);
-
-        balance[_from] -= _value;
-        balance[_to] += _value;
-        allowanceOf[_from][msg.sender] -= _value;
+        balance[from] -= value;
+        balance[to] += value;
+        allowanceOf[from][msg.sender] -= value;
 
         return true;
     }
 
-    function mint(address _account, uint256 _amount)
+    function mint(address account, uint256 amount)
         internal
         virtual
-        differentFromZeroAddress(_account)
+        differentFromZeroAddress(account)
     {
-        emit LogTransfer(address(0), _account, _amount);
+        emit LogTransfer(address(0), account, amount);
 
-        totalTokenSupply += _amount;
-        balance[_account] += _amount;
-        allowanceOf[msg.sender][_account] += _amount;
+        totalTokenSupply += amount;
+        balance[account] += amount;
+        allowanceOf[msg.sender][account] += amount;
     }
 }

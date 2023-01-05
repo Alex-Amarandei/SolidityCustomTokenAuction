@@ -37,7 +37,7 @@ contract MyAuction is Auction {
         payable
         override
         auctionOngoing
-        returns (bool)
+        returns (bool success)
     {
         require(bidOf[msg.sender] == 0);
         require(_amount != 0);
@@ -50,6 +50,7 @@ contract MyAuction is Auction {
         bidders.push(msg.sender);
         bidOf[msg.sender] = highestBid;
         tokenContract.transferFrom(msg.sender, address(this), _amount);
+
         return true;
     }
 
@@ -58,14 +59,15 @@ contract MyAuction is Auction {
         override
         ownerOnly
         auctionOngoing
-        returns (bool)
+        returns (bool success)
     {
         STATE = auctionState.CANCELLED;
         emit CanceledEvent("Auction Cancelled", block.timestamp);
+
         return true;
     }
 
-    function withdraw() public override auctionEnded returns (bool) {
+    function withdraw() public override auctionEnded returns (bool success) {
         uint256 amount = bidOf[msg.sender];
 
         bidOf[msg.sender] = 0;
@@ -77,7 +79,12 @@ contract MyAuction is Auction {
         return true;
     }
 
-    function retrieveFunds() external ownerOnly auctionEnded returns (bool) {
+    function retrieveFunds()
+        external
+        ownerOnly
+        auctionEnded
+        returns (bool success)
+    {
         tokenContract.transfer(
             msg.sender,
             tokenContract.balanceOf(address(this))
@@ -86,7 +93,12 @@ contract MyAuction is Auction {
         return true;
     }
 
-    function destructAuction() external ownerOnly auctionEnded returns (bool) {
+    function destructAuction()
+        external
+        ownerOnly
+        auctionEnded
+        returns (bool success)
+    {
         for (uint256 i = 0; i < bidders.length; i++) {
             if (bidOf[bidders[i]] != 0) {
                 tokenContract.transferFrom(

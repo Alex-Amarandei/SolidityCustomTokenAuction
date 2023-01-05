@@ -4,12 +4,13 @@
 pragma solidity >=0.5.0;
 
 interface IERC20 {
-    event Approval(
+    event LogApproval(
         address indexed owner,
         address indexed spender,
         uint256 value
     );
-    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    event LogTransfer(address indexed from, address indexed to, uint256 value);
 
     function name() external view returns (string memory);
 

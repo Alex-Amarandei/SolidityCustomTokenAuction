@@ -10,13 +10,13 @@ contract SampleTokenSale {
     address private owner;
     uint256 private tokensSold;
 
+    event LogApprove(uint256 _amountToApprove);
+    event LogSell(address indexed _buyer, uint256 indexed _amount);
     event LogCreateContract(
         address _owner,
         SampleToken _tokenContract,
         uint256 _initialTokenPrice
     );
-    event LogSell(address indexed _buyer, uint256 indexed _amount);
-    event LogApprove(uint256 _amountToApprove);
 
     modifier ownerOnly() {
         require(
@@ -46,16 +46,10 @@ contract SampleTokenSale {
         return owner;
     }
 
-    function setTokenPrice(uint256 _tokenPrice)
-        external
-        ownerOnly
-        returns (bool success)
-    {
+    function setTokenPrice(uint256 _tokenPrice) external ownerOnly {
         require(_tokenPrice != 0);
 
         tokenPrice = _tokenPrice;
-
-        return true;
     }
 
     function buyTokens(uint256 _numberOfTokens) public payable {
