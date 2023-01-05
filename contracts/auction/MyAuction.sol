@@ -2,18 +2,21 @@
 
 pragma solidity ^0.8.0;
 
-import "../token/SampleToken.sol";
+import "../token/ZAOToken.sol";
 import "../../interfaces/auction/Auction.sol";
 
+/// @title  A token contract allowing for car auctioning using a custom token
+/// @author @Alex-Amarandei @Naclyy @ochesanum
+/// @dev    Allows buyers to purchase tokens directly from the owner's reserve
 contract MyAuction is Auction {
-    SampleToken public tokenContract;
+    ZAOToken public tokenContract;
 
     constructor(
         uint256 _biddingTime,
         address payable _owner,
         string memory _brand,
         string memory _rNumber,
-        SampleToken _tokenContract // maybe add a modifier
+        ZAOToken _tokenContract // maybe add a modifier
     ) {
         auctionOwner = _owner;
         auctionStart = block.timestamp;
@@ -101,10 +104,7 @@ contract MyAuction is Auction {
     {
         for (uint256 i = 0; i < bidders.length; i++) {
             if (bidOf[bidders[i]] != 0) {
-                tokenContract.transfer(
-                    bidders[i],
-                    bidOf[bidders[i]]
-                );
+                tokenContract.transfer(bidders[i], bidOf[bidders[i]]);
             }
         }
 

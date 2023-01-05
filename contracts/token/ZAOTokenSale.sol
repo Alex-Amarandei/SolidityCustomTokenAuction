@@ -2,10 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import "./SampleToken.sol";
+import "./ZAOToken.sol";
 
-contract SampleTokenSale {
-    SampleToken public tokenContract;
+/// @title  A token contract acting as a mediator for the initial coin offering between the owner and the buyers
+/// @author @Alex-Amarandei @Naclyy @ochesanum
+/// @dev    Allows buyers to purchase tokens directly from the owner's reserve
+contract ZAOTokenSale {
+    ZAOToken public tokenContract;
     uint256 private tokenPrice;
     address private owner;
     uint256 private tokensSold;
@@ -14,7 +17,7 @@ contract SampleTokenSale {
     event LogSell(address indexed _buyer, uint256 indexed _amount);
     event LogCreateContract(
         address _owner,
-        SampleToken _tokenContract,
+        ZAOToken _tokenContract,
         uint256 _initialTokenPrice
     );
 
@@ -26,7 +29,7 @@ contract SampleTokenSale {
         _;
     }
 
-    constructor(SampleToken _tokenContract, uint256 _tokenPrice) {
+    constructor(ZAOToken _tokenContract, uint256 _tokenPrice) {
         emit LogCreateContract(msg.sender, _tokenContract, _tokenPrice);
 
         owner = msg.sender;

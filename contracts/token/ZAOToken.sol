@@ -4,7 +4,11 @@ pragma solidity ^0.8.0;
 
 import "../../interfaces/token/IERC20.sol";
 
-contract SampleToken is IERC20 {
+/// @title  A token contract implementing the ERC20 standard
+/// @author @Alex-Amarandei @Naclyy @ochesanum
+/// @dev    Adds a custom minting feature triggered once every 10000 units transferred per user
+contract ZAOToken is IERC20 {
+    /// @notice ZAO stands for Zaharia-Amarandei-Ochesanu, the last names of the authors
     string private tokenName = "ZAO Token";
     string private tokenSymbol = "ZAO";
     uint256 private totalTokenSupply;
@@ -70,6 +74,8 @@ contract SampleToken is IERC20 {
         return true;
     }
 
+    /// @notice The method was modified to account for transfers and gift the user once every 10000 units
+    /// @dev    Only transfer calls are counted and one token is minted as a reward and accounted for everywhere
     function transfer(address to, uint256 value)
         external
         override
@@ -120,6 +126,7 @@ contract SampleToken is IERC20 {
         return true;
     }
 
+    /// @dev Method is called to mint the reward token
     function mint(address account, uint256 amount)
         internal
         virtual
