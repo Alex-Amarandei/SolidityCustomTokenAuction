@@ -17,6 +17,7 @@ contract Auction {
     struct car {
         string brand;
         string rNumber;
+        address owner;
     }
 
     car public myCar;

@@ -27,6 +27,16 @@ contract MyAuction is Auction {
         tokenContract = _tokenContract;
     }
 
+    event SendPrizeEvent(string message, uint256 time, car myCar);
+
+    modifier highestBidderDenied() {
+        require(
+            msg.sender != highestBidder,
+            "You won the auction, you can't widraw your bid!"
+        );
+        _;
+    }
+
     function get_owner() public view returns (address) {
         return auctionOwner;
     }
@@ -70,7 +80,19 @@ contract MyAuction is Auction {
         return true;
     }
 
-    function withdraw() public override auctionEnded returns (bool success) {
+    function sendPrize() internal returns (bool success) {
+        myCar.owner = highestBidder;
+        emit SendPrizeEvent("Ownership Transfered", block.timestamp, myCar);
+        return true;
+    }
+
+    function withdraw()
+        public
+        override
+        auctionEnded
+        highestBidderDenied
+        returns (bool success)
+    {
         uint256 amount = bidOf[msg.sender];
 
         bidOf[msg.sender] = 0;
@@ -88,11 +110,18 @@ contract MyAuction is Auction {
         auctionEnded
         returns (bool success)
     {
-        tokenContract.transfer(
-            msg.sender,
-            tokenContract.balanceOf(address(this))
-        );
+        require(highestBid != 0);
+        tokenContract.transfer(msg.sender, highestBid);
+        highestBid = 0;
+        bidOf[highestBidder] = 0;
+        return true;
+    }
 
+    function sendFundsToOwner() internal auctionEnded returns (bool success) {
+        require(highestBid != 0);
+        tokenContract.transfer(msg.sender, highestBid);
+        highestBid = 0;
+        bidOf[highestBidder] = 0;
         return true;
     }
 
@@ -102,12 +131,13 @@ contract MyAuction is Auction {
         auctionEnded
         returns (bool success)
     {
+        sendFundsToOwner();
         for (uint256 i = 0; i < bidders.length; i++) {
             if (bidOf[bidders[i]] != 0) {
                 tokenContract.transfer(bidders[i], bidOf[bidders[i]]);
             }
         }
-
+        sendPrize();
         selfdestruct(auctionOwner);
         return true;
     }
