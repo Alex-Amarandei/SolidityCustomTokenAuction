@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../../interfaces/token/IERC20.sol";
+import "@uniswap/contracts/interfaces/IERC20.sol";
 
 /// @title  A token contract implementing the ERC20 standard
 /// @author @Alex-Amarandei @Naclyy @ochesanum
@@ -26,7 +26,7 @@ contract ZAOToken is IERC20 {
     }
 
     constructor(uint256 initialSupply) {
-        emit LogTransfer(address(0), msg.sender, initialSupply);
+        emit Transfer(address(0), msg.sender, initialSupply);
 
         balance[msg.sender] = initialSupply;
         totalTokenSupply = initialSupply;
@@ -67,7 +67,7 @@ contract ZAOToken is IERC20 {
         differentFromZeroAddress(spender)
         returns (bool success)
     {
-        emit LogApproval(msg.sender, spender, value);
+        emit Approval(msg.sender, spender, value);
 
         allowanceOf[msg.sender][spender] = value;
 
@@ -87,7 +87,7 @@ contract ZAOToken is IERC20 {
             "Balance of sender must be greater than transfer value"
         );
 
-        emit LogTransfer(msg.sender, to, value);
+        emit Transfer(msg.sender, to, value);
 
         balance[msg.sender] -= value;
         balance[to] += value;
@@ -117,7 +117,7 @@ contract ZAOToken is IERC20 {
             allowanceOf[from][msg.sender] >= value,
             "Balance of sender must be greater than transfer value"
         );
-        emit LogTransfer(from, to, value);
+        emit Transfer(from, to, value);
 
         balance[from] -= value;
         balance[to] += value;
@@ -132,7 +132,7 @@ contract ZAOToken is IERC20 {
         virtual
         differentFromZeroAddress(account)
     {
-        emit LogTransfer(address(0), account, amount);
+        emit Transfer(address(0), account, amount);
 
         totalTokenSupply += amount;
         balance[account] += amount;
