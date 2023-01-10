@@ -5,5 +5,9 @@ def clean_build(directory):
     shutil.rmtree(directory)
 
 
-if __name__ == "__main__":
+def main():
     clean_build("./build")
+
+
+if __name__ == "__main__":
+    main()
