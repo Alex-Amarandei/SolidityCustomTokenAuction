@@ -38,4 +38,4 @@ def deploy_auction(
 
 def main():
     deploy_zao_token()
-    deploy_auction()
+    # deploy_auction()

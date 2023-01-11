@@ -10,6 +10,7 @@ import {
 	useGetHighestBid,
 	useGetHighestBidder,
 } from "../hooks/index.jsx";
+import { useEthers } from "@usedapp/core";
 
 function timeConverter(UNIX_timestamp) {
 	var a = new Date(UNIX_timestamp * 1000);
@@ -39,6 +40,9 @@ function timeConverter(UNIX_timestamp) {
 }
 
 const Auction = () => {
+	const { account, activateBrowserWallet, deactivate } = useEthers();
+	const connected = account !== undefined;
+
 	const validateAuctionAddress = async () => {
 		console.log("potentialAuction", typeof potentialAuction);
 		console.log("allAuctions", allAuctions[0]);
@@ -115,6 +119,12 @@ const Auction = () => {
 				console.log("setAuctionStateError", error);
 			});
 	}, [isAuctionValid]);
+
+	useEffect(() => {
+		if (parseInt(auctionEnd) < parseInt(Math.floor(Date.now() / 1000))) {
+			setAuctionState("CANCELLED");
+		}
+	});
 
 	// /////////////////////////////////////////////
 
@@ -247,7 +257,14 @@ const Auction = () => {
 						)}
 					</div>
 					<br /> <br /> <br /> <br />
-					{isAuctionValid ? <BidBar /> : <br />}
+					{isAuctionValid && connected ? (
+						<BidBar
+							auctionState={auctionState}
+							auctionAddress={potentialAuction}
+						/>
+					) : (
+						<br />
+					)}
 				</div>
 			</div>
 		</div>

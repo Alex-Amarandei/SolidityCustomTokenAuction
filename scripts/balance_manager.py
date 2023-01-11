@@ -25,5 +25,5 @@ def balance_of_account_by_address(address=None):
 
 
 def main():
-    balance_of_account_by_index()
+    balance_of_account_by_index(1)
     # balance_of_account_by_address()
