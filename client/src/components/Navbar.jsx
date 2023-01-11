@@ -20,12 +20,6 @@ const Navbar = () => {
 					>
 						Motivation
 					</a>
-					{/* <a
-						href="#responsive-header"
-						class="block mt-4 px-4 lg:inline-block lg:mt-0 un mr-4"
-					>
-						Docs
-					</a> */}
 					<a
 						href="https://github.com/Alex-Amarandei/SolidityCustomTokenAuction"
 						target="_blank"
@@ -37,19 +31,21 @@ const Navbar = () => {
 				</div>
 				<div className="text-2xl text-black">
 					{connected ? (
-						<a
+						<button
 							href="#"
 							class="inline-block px-4 py-2 leading-none border rounded-full border-black bg-gradient-to-r from-cyan-200 to-cyan-300 hover:bg-gradient-to-r hover:from-blue-200 hover:to-blue-300 hover:border-2 hover:font-medium mt-4 lg:mt-0"
+							onClick={deactivate}
 						>
-							Account Address
-						</a>
+							Disconnect {account.slice(0, 10)}...
+						</button>
 					) : (
-						<a
+						<button
 							href="#"
 							class="inline-block px-4 py-2 leading-none border rounded-full border-black bg-gradient-to-r from-cyan-200 to-cyan-300 hover:bg-gradient-to-r hover:from-blue-200 hover:to-blue-300 hover:border-2 hover:font-medium mt-4 lg:mt-0"
+							onClick={activateBrowserWallet}
 						>
 							Connect Wallet
-						</a>
+						</button>
 					)}
 				</div>
 			</div>
