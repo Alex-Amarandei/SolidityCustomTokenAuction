@@ -1,12 +1,48 @@
 import { default as BidBar } from "./BidBar.jsx";
 import car from "../assets/car.png";
 import { useEffect, useState } from "react";
-import { useGetAllAuctions } from "../hooks/index.jsx";
+import {
+	useGetAllAuctions,
+	useGetAuctionEnd,
+	useGetAuctionStart,
+	useGetAuctionState,
+	useGetCar,
+	useGetHighestBid,
+	useGetHighestBidder,
+} from "../hooks/index.jsx";
+
+function timeConverter(UNIX_timestamp) {
+	var a = new Date(UNIX_timestamp * 1000);
+	var months = [
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec",
+	];
+	var year = a.getFullYear();
+	var month = months[a.getMonth()];
+	var date = a.getDate();
+	var hour = a.getHours();
+	var min = a.getMinutes();
+	var sec = a.getSeconds();
+	var time =
+		date + " " + month + " " + year + " " + hour + ":" + min + ":" + sec;
+	return time;
+}
 
 const Auction = () => {
-	const validateAuctionAddress = () => {
-		console.log("potentialAuction", potentialAuction);
-		console.log("allAuctions", allAuctions);
+	const validateAuctionAddress = async () => {
+		console.log("potentialAuction", typeof potentialAuction);
+		console.log("allAuctions", allAuctions[0]);
+		console.log(allAuctions.includes(potentialAuction));
 
 		setIsAuctionValid(allAuctions.includes(potentialAuction));
 	};
@@ -22,6 +58,120 @@ const Auction = () => {
 	useEffect(() => {
 		setAllAuctions(getAllAuctions);
 	}, [getAllAuctions]);
+
+	/////////////////////////////////////////////
+
+	const [auctionEnd, setAuctionEnd] = useState("");
+
+	let getAuctionEnd = useGetAuctionEnd("");
+
+	useEffect(() => {
+		getAuctionEnd = useGetAuctionEnd(potentialAuction);
+
+		getAuctionEnd
+			.then((res) => {
+				setAuctionEnd(res);
+				console.log("setAuctionEnd", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionEndError", error);
+			});
+	}, [isAuctionValid]);
+
+	// /////////////////////////////////////////////
+
+	const [auctionStart, setAuctionStart] = useState("");
+
+	let getAuctionStart = useGetAuctionStart("");
+
+	useEffect(() => {
+		getAuctionStart = useGetAuctionStart(potentialAuction);
+
+		getAuctionStart
+			.then((res) => {
+				setAuctionStart(res);
+				console.log("setAuctionStart", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionStartError", error);
+			});
+	}, [isAuctionValid]);
+
+	// /////////////////////////////////////////////
+
+	const [auctionState, setAuctionState] = useState("");
+
+	let getAuctionState = useGetAuctionState("");
+
+	useEffect(() => {
+		getAuctionState = useGetAuctionState(potentialAuction);
+
+		getAuctionState
+			.then((res) => {
+				setAuctionState(res);
+				console.log("setAuctionState", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionStateError", error);
+			});
+	}, [isAuctionValid]);
+
+	// /////////////////////////////////////////////
+
+	const [auctionCar, setAuctionCar] = useState("");
+
+	let getAuctionCar = useGetCar("");
+
+	useEffect(() => {
+		getAuctionCar = useGetCar(potentialAuction);
+
+		getAuctionCar
+			.then((res) => {
+				setAuctionCar(res);
+				console.log("setAuctionCar", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionCarError", error);
+			});
+	}, [isAuctionValid]);
+
+	// /////////////////////////////////////////////
+
+	const [auctionHighestBid, setAuctionHighestBid] = useState("");
+
+	let getAuctionHighestBid = useGetHighestBid("");
+
+	useEffect(() => {
+		getAuctionHighestBid = useGetHighestBid(potentialAuction);
+
+		getAuctionHighestBid
+			.then((res) => {
+				setAuctionHighestBid(res);
+				console.log("setAuctionHighestBid", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionHighestBidError", error);
+			});
+	}, [isAuctionValid]);
+
+	// /////////////////////////////////////////////
+
+	const [auctionHighestBidder, setAuctionHighestBidder] = useState("");
+
+	let getAuctionHighestBidder = useGetHighestBidder("");
+
+	useEffect(() => {
+		getAuctionHighestBidder = useGetHighestBidder(potentialAuction);
+
+		getAuctionHighestBidder
+			.then((res) => {
+				setAuctionHighestBidder(res);
+				console.log("setAuctionHighestBidder", res);
+			})
+			.catch((error) => {
+				console.log("setAuctionHighestBidderError", error);
+			});
+	}, [isAuctionValid]);
 
 	/////////////////////////////////////////////
 
@@ -53,28 +203,36 @@ const Auction = () => {
 							<div className="flex flex-row">
 								<div class="flex-1 mx-auto space-y-6 text-xl">
 									<div class="mx-auto space-y-6 text-center text-2xl underline underline-offset-8">
-										<h3>Auction #1</h3>
+										<h3>Auction</h3>
 									</div>
 									<ul>
 										<li className="my-16">
 											<b>Auction Start Time (Timestamp): </b>
-											<i>09.01.2023 (1234567890)</i>
+											<i>
+												{timeConverter(auctionStart)} ({auctionStart})
+											</i>
 										</li>
 										<li className="my-16">
-											<b>Car Brand:</b> <i>ZOA</i>
+											<b>Car Brand: </b> <i>{auctionCar.carBrand}</i>
 										</li>
 										<li className="my-16">
-											<b>Registration Number:</b> <i>MISS1</i>
+											<b>Registration Number: </b>
+											<i>{auctionCar.carRegistrationNumber}</i>
 										</li>
 										<li className="my-16">
-											<b>Auction State:</b> <i>STARTED</i>
+											<b>Auction State:</b> <i>{auctionState}</i>
 										</li>
 										<li className="my-16">
 											<b>Highest Bid (Bidder Address): </b>
-											<i>1 ZAO (0x1234567890123456789012345678901234567890)</i>
+											<i>
+												{auctionHighestBid} ({auctionHighestBidder})
+											</i>
 										</li>
 										<li className="my-16">
-											<b>Auction End (Timestamp):</b> <i>-</i>
+											<b>Auction End (Timestamp): </b>
+											<i>
+												{timeConverter(auctionEnd)} ({auctionEnd})
+											</i>
 										</li>
 									</ul>
 								</div>
